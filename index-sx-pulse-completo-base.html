@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SX Pulse • App Base Completo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#050712;--panel:#0d1730;--panel2:#121f42;--line:#263f70;--text:#f8fbff;--mut:#9fb3d0;
+  --blue:#28b8ff;--cyan:#17f1ff;--purple:#8b5cf6;--pink:#ff4fd8;--gold:#ffbf2e;--green:#22c55e;--red:#ef4444;--orange:#fb923c;
+}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#25146c 0,#07102b 34%,#03050f 100%);color:var(--text);font-family:Inter,Arial,Helvetica,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.side{background:linear-gradient(180deg,rgba(7,10,35,.98),rgba(3,5,15,.98));border-right:1px solid var(--line);padding:18px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}.logo{width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,var(--cyan),var(--purple),var(--pink));display:grid;place-items:center;font-size:30px;box-shadow:0 0 40px #8b5cf677}.brand b{font-size:24px}.mut{color:var(--mut)}.small{font-size:12px}
+.nav{display:grid;gap:8px}.nav button{border:1px solid transparent;background:transparent;color:#dbeafe;text-align:left;padding:13px 14px;border-radius:16px;font-weight:900}.nav button.active,.nav button:hover{background:linear-gradient(135deg,rgba(139,92,246,.96),rgba(255,79,216,.78));border-color:#8b5cf6;box-shadow:0 0 22px #8b5cf644;color:white}
+.sidecard{margin-top:16px;background:rgba(15,23,42,.82);border:1px solid var(--line);border-radius:20px;padding:14px}.status{display:inline-flex;gap:6px;align-items:center;background:#052e16;color:#bbf7d0;border:1px solid #14532d;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:900}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green)}
+.main{padding:22px;min-width:0}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;background:rgba(12,18,50,.82);border:1px solid var(--line);border-radius:24px;padding:16px;margin-bottom:16px}
+h1,h2,h3{margin:0}.badge{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 10px;margin:3px;color:#dbeafe;font-weight:800;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:linear-gradient(180deg,rgba(20,31,74,.96),rgba(7,13,36,.96));border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 20px 60px #0007;overflow:hidden}.kpi{grid-column:span 3;min-height:130px;position:relative}.kpi:after{content:"";position:absolute;right:-40px;top:-45px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 65%)}
+.span3{grid-column:span 3}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.label{font-size:12px;color:#9ddcff;text-transform:uppercase;font-weight:900}.value{font-size:30px;font-weight:1000;margin-top:8px}.gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.pink{color:var(--pink)}
+input,select,textarea{width:100%;background:#071126;color:#fff;border:1px solid var(--line);border-radius:14px;padding:12px}label{display:block;margin:10px 0 6px;color:#93c5fd;font-size:12px;font-weight:900;text-transform:uppercase}.btn{border:0;border-radius:14px;padding:11px 14px;font-weight:1000;color:white;background:linear-gradient(135deg,var(--purple),var(--pink))}.btn.gold{background:linear-gradient(135deg,var(--gold),var(--orange));color:#061120}.btn.green{background:#12351f;color:#bbf7d0}.btn.red{background:#3b1018;color:#fecaca}.btn.blue{background:#082f49;color:#bae6fd}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.row2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.tableWrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;border-bottom:1px solid #27436d;text-align:left;vertical-align:top}th{font-size:11px;color:#93c5fd;text-transform:uppercase;white-space:nowrap}td{white-space:nowrap}tr:hover{background:#0f213d}
+.photo{width:46px;height:46px;border-radius:50%;display:inline-grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--pink),var(--blue));color:#061120;font-weight:1000}.podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:12px;align-items:end}.place{background:#0a1430;border:1px solid var(--line);border-radius:22px;padding:16px;text-align:center}.place.first{min-height:220px;border-color:var(--gold);box-shadow:0 0 38px #ffbf2e33}.progress{height:10px;border-radius:999px;background:#0a1430;overflow:hidden}.bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--green))}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{background:#08142f;border:1px solid var(--line);color:#dbeafe;border-radius:999px;padding:9px 13px;font-weight:900}.tab.active{background:linear-gradient(135deg,var(--purple),var(--pink))}
+.groupCard{border-left:4px solid var(--purple);margin-bottom:12px}.footer{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:14px;color:var(--mut);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+canvas{max-height:300px}
+@media(max-width:900px){.app{display:block}.side{height:auto;position:relative;border-right:0}.nav{grid-template-columns:1fr 1fr}.main{padding:14px}.top{flex-direction:column;align-items:stretch}.grid{grid-template-columns:1fr}.kpi,.span3,.span4,.span5,.span6,.span7,.span8,.span12{grid-column:span 1}.row,.row2{grid-template-columns:1fr}.podium{grid-template-columns:1fr}.value{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo">✦</div><div><b>SX PULSE</b><br><span class="mut small">Dashboard • Arena • Pulse Bank</span></div></div>
+    <div id="nav" class="nav"></div>
+    <div class="sidecard"><span class="status"><span class="dot"></span>Aplicativo pronto</span><p class="mut small">Importe o Excel ANO 2026 para gerar os relatórios com todas as colunas.</p></div>
+  </aside>
+  <main class="main">
+    <div class="top">
+      <div><h1 id="title">Dashboard Executivo</h1><div id="subtitle" class="mut">Use todas as colunas da planilha para montar relatórios.</div></div>
+      <div><span class="badge">CEO: Raphael</span><span class="badge">CO-CEO: Marcel</span></div>
+    </div>
+    <section id="view"></section>
+    <div class="footer"><b>SX Pulse</b><span>Versão base completa • Visual premium • Mobile first</span></div>
+  </main>
+</div>
+
+<script>
+/* CONFIG SUPABASE OPCIONAL */
+const SUPABASE_URL = ""; // Cole aqui a Project URL
+const SUPABASE_KEY = ""; // Cole aqui a Publishable Key
+const supa = (SUPABASE_URL && SUPABASE_KEY && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+const navs=[
+ ["home","🏠 Dashboard"],["upload","📥 Importar Excel"],["meses","📅 Meses"],["promotores","👥 Promotores"],["liners","🎯 Liners"],["closers","🤝 Fechadores"],
+ ["pontos","📍 Pontos"],["casais","💙 Perfil Casais"],["bank","🏦 Pulse Bank"],["arena","⚔️ Arena SX"],["inativos","🔴 Inativos"],["ia","🤖 IA Pulse"],["base","🧾 Base Completa"]
+];
+let tab="home";
+let dados = JSON.parse(localStorage.getItem("sx_dados")||"[]");
+let grupos = JSON.parse(localStorage.getItem("sx_grupos")||JSON.stringify([
+ {nome:"Gaviões",lider:"Ana Caroline",cor:"Roxo",membros:["Ana Caroline","Josyene","Larissa Ribeiro","Rebeca"],casais:0,vendas:0,vgv:0},
+ {nome:"Baixada 013",lider:"Ricardo",cor:"Azul",membros:["Ricardo","Adriano","Alexandre","Daniela"],casais:0,vendas:0,vgv:0},
+ {nome:"RJ",lider:"Pedro",cor:"Verde",membros:["Pedro","Suenne","Jessica","Mateus Esley"],casais:0,vendas:0,vgv:0},
+ {nome:"Carcará",lider:"Jonatas",cor:"Dourado",membros:["Jonatas","Andre","Renan","Matheus Domingos"],casais:0,vendas:0,vgv:0}
+]));
+let pessoas = JSON.parse(localStorage.getItem("sx_pessoas")||"[]");
+let xp = JSON.parse(localStorage.getItem("sx_xp")||"{}");
+let inativos = JSON.parse(localStorage.getItem("sx_inativos")||JSON.stringify(["Igor Senna","Robson","Larissa Vitória"]));
+
+const money=n=>(n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0});
+const num=n=>(n||0).toLocaleString("pt-BR");
+const norm=s=>String(s||"").trim();
+const low=s=>norm(s).toLowerCase();
+const ini=n=>norm(n).split(" ").filter(Boolean).map(x=>x[0]).slice(0,2).join("").toUpperCase();
+function save(){localStorage.setItem("sx_dados",JSON.stringify(dados));localStorage.setItem("sx_grupos",JSON.stringify(grupos));localStorage.setItem("sx_pessoas",JSON.stringify(pessoas));localStorage.setItem("sx_xp",JSON.stringify(xp));localStorage.setItem("sx_inativos",JSON.stringify(inativos));}
+function go(t){tab=t;render()}
+function setHeader(t,s){title.innerText=t;subtitle.innerText=s}
+function renderNav(){nav.innerHTML=navs.map(n=>`<button class="${tab===n[0]?'active':''}" onclick="go('${n[0]}')">${n[1]}</button>`).join("")}
+function cell(r,aliases){for(const a of aliases){let k=Object.keys(r).find(x=>low(x)===low(a)); if(k!==undefined) return r[k]} return ""}
+function prom(r){return cell(r,["Promotor de marketing","Promotor","PROMOTOR DE MARKETING"])}
+function valor(r){let v=cell(r,["Valor vendido","VALOR VENDIDO","Valor","VGV"]); if(typeof v==="number") return v; return Number(String(v||"0").replace(/[R$\s.]/g,"").replace(",","."))||0}
+function statusContrato(r){return cell(r,["Status do contrato","STATUS DO CONTRATO","Status contrato"])}
+function dataAt(r){return cell(r,["Data de atendimento","DATA DE ATENDIMENTO","Data"])}
+function statusAt(r){return cell(r,["Status atendimento","STATUS ATENDIMENTO"])}
+function qual(r){return cell(r,["Qualificação","QUALIFICAÇÃO","Qualificacao"])}
+function localCap(r){return cell(r,["Local Captação","LOCAL CAPTAÇÃO","Local Captacao","Local"])}
+function closer(r){return cell(r,["Closer","CLOSER","Fechador"])}
+function liner(r){return cell(r,["Liner","LINER"])}
+function vendaQtd(r){let st=String(statusContrato(r)||"").toUpperCase(); let m=st.match(/ATIVO/g); return m?m.length:0}
+function mesNome(r){let d=dataAt(r); if(d instanceof Date&&!isNaN(d)) return d.toLocaleString("pt-BR",{month:"long",year:"numeric"}); let s=String(d||""); let m=s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/); if(m){let mm=Number(m[2]); return ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][mm]+" 2026"} return "Sem mês"}
+function kpi(l,v,c="blue",s=""){return `<div class="card kpi"><div class="label">${l}</div><div class="value ${c}">${v}</div><div class="mut small">${s}</div></div>`}
+function aggregate(rows,byFn){
+ const map={};
+ rows.forEach(r=>{let key=norm(byFn(r))||"Não informado"; if(!map[key]) map[key]={nome:key,casais:0,vendas:0,vgv:0,q:0,nq:0}; map[key].casais++; map[key].vendas+=vendaQtd(r); map[key].vgv+=valor(r); let q=String(qual(r)||"").toUpperCase(); if(q==="Q") map[key].q++; if(q==="NQ") map[key].nq++;});
+ return Object.values(map).map(x=>({...x,ef:x.casais?x.vendas/x.casais:0})).sort((a,b)=>b.vgv-a.vgv);
+}
+function allRows(){return dados.length?dados:demo()}
+function demo(){return [
+ {"Promotor de marketing":"Ana Caroline","Valor vendido":1068500,"Status do contrato":"ATIVO # ATIVO # ATIVO","Data de atendimento":"15/05/2026","Qualificação":"Q","Local Captação":"Parque Dreams","Closer":"Renata Bueno","Liner":"Karina Fontan","Cidade":"São Paulo","UF":"SP","Idade":34,"Renda":12000,"Carro":"Sim","Cartões":3,"Relacionamento":"Casado","Hospedagem":"Hotel"},
+ {"Promotor de marketing":"André Carriço","Valor vendido":1134000,"Status do contrato":"ATIVO # ATIVO","Data de atendimento":"16/05/2026","Qualificação":"Q","Local Captação":"Baden Baden","Closer":"Daniel Marcos","Liner":"Renan Lourenço","Cidade":"Rio de Janeiro","UF":"RJ","Idade":41,"Renda":18000,"Carro":"Sim","Cartões":2,"Relacionamento":"Casado","Hospedagem":"Pousada"},
+ {"Promotor de marketing":"Adriano Moreira","Valor vendido":906000,"Status do contrato":"ATIVO","Data de atendimento":"17/05/2026","Qualificação":"NQ","Local Captação":"Porta Dream","Closer":"José Neto","Liner":"Junior Pereira","Cidade":"Campinas","UF":"SP","Idade":38,"Renda":9000,"Carro":"Sim","Cartões":1,"Relacionamento":"União Estável","Hospedagem":"Airbnb"}
+]}
+function metricas(rows){return {casais:rows.length,vendas:rows.reduce((s,r)=>s+vendaQtd(r),0),vgv:rows.reduce((s,r)=>s+valor(r),0),q:rows.filter(r=>String(qual(r)).toUpperCase()==="Q").length,nq:rows.filter(r=>String(qual(r)).toUpperCase()==="NQ").length}}
+function tableAgg(rows){return `<div class="tableWrap"><table><tr><th>Nome</th><th>Casais</th><th>Vendas</th><th>VGV</th><th>Eficiência</th><th>Q</th><th>NQ</th></tr>${rows.map(x=>`<tr><td><b>${x.nome}</b></td><td>${num(x.casais)}</td><td>${num(x.vendas)}</td><td>${money(x.vgv)}</td><td>${(x.ef*100).toFixed(1)}%</td><td>${x.q}</td><td>${x.nq}</td></tr>`).join("")}</table></div>`}
+function podium(rows){let r=rows.slice(0,3); return `<div class="podium">${place(r[1],2)}${place(r[0],1)}${place(r[2],3)}</div>`}
+function place(p,pos){if(!p)return ""; return `<div class="place ${pos===1?'first':''}"><div class="photo">${ini(p.nome)}</div><h3>${pos===1?'🥇':pos===2?'🥈':'🥉'} ${p.nome}</h3><p class="mut">${p.casais} casais • ${p.vendas} vendas</p><b class="gold">${money(p.vgv)}</b></div>`}
+
+function viewHome(){let rows=allRows(),m=metricas(rows), promAgg=aggregate(rows,prom), pointAgg=aggregate(rows,localCap); setHeader("Dashboard Executivo","Visão geral com todas as colunas da planilha"); view.innerHTML=`<div class="grid">
+${kpi("Casais",num(m.casais),"blue","Atendimentos")}${kpi("Vendas",num(m.vendas),"green","Contrato ATIVO")}${kpi("VGV",money(m.vgv),"gold","Valor vendido")}${kpi("Eficiência",m.casais?((m.vendas/m.casais)*100).toFixed(1)+"%":"0%","pink","Vendas / Casais")}
+${kpi("Qualificados",num(m.q),"green","Q")}${kpi("Não Qualificados",num(m.nq),"red","NQ")}
+<div class="card span6"><h3>🏆 Top Promotores por VGV</h3><br>${podium(promAgg)}</div>
+<div class="card span6"><h3>📍 Melhores Pontos</h3><br>${tableAgg(pointAgg.slice(0,6))}</div>
+<div class="card span12"><h3>🤖 IA Pulse</h3><p>${insights()}</p></div>
+</div>`}
+function insights(){let rows=allRows(),promAgg=aggregate(rows,prom),pointAgg=aggregate(rows,localCap),m=metricas(rows); return `Base atual com ${num(m.casais)} casais, ${num(m.vendas)} vendas e ${money(m.vgv)} em VGV. Melhor promotor por VGV: ${promAgg[0]?.nome||"-"}. Melhor ponto: ${pointAgg[0]?.nome||"-"}. Eficiência geral: ${m.casais?((m.vendas/m.casais)*100).toFixed(1):0}%.`}
+
+function viewUpload(){setHeader("Importar Excel","Suba o arquivo ANO 2026 para gerar todos os relatórios"); view.innerHTML=`<div class="grid"><div class="card span6"><h3>📥 Importar planilha</h3><p class="mut">O app lê todas as colunas e monta relatórios por promotor, liner, fechador, ponto, perfil dos casais e meses.</p><input type="file" id="file" accept=".xlsx,.xls,.csv"/><br><br><button class="btn gold" onclick="importar()">Importar dados</button></div><div class="card span6"><h3>Colunas esperadas</h3><p class="mut">Promotor de marketing, Valor vendido, Nome, Status do contrato, Data de atendimento, Status atendimento, Qualificação, Local Captação, Closer, Liner, Cidade, UF, Idade, Renda, Carro, Cartões, Relacionamento, Hospedagem e demais colunas que existirem.</p></div></div>`}
+function importar(){let f=document.getElementById("file").files[0]; if(!f){alert("Escolha o arquivo Excel.");return} let reader=new FileReader(); reader.onload=e=>{let wb=XLSX.read(new Uint8Array(e.target.result),{type:"array",cellDates:true}); let all=[]; wb.SheetNames.forEach(s=>{let rows=XLSX.utils.sheet_to_json(wb.Sheets[s],{defval:""}); rows.forEach(r=>{r.__aba=s; all.push(r)})}); dados=all; buildPessoas(); save(); alert("Importado: "+dados.length+" linhas."); go("home")}; reader.readAsArrayBuffer(f)}
+function buildPessoas(){let ag=aggregate(dados,prom); pessoas=ag.map(a=>({nome:a.nome,funcao:"Promotor",equipe:equipeByName(a.nome),xp:500+a.vendas*30+a.casais*5,status:inativos.includes(a.nome)?"INATIVO":"ATIVO"}))}
+function equipeByName(n){let ex=["André","Andre","Francisco","Felipe","Matheus Domingos","Jonatas","Alexandre","Ricardo","Renan","Igor","Robson","Larissa Vitória"]; return ex.some(x=>low(n).includes(low(x)))?"EXTERNA":"PARK"}
+
+function viewMeses(){let ag=aggregate(allRows(),mesNome); setHeader("Meses Separados","Ranking e resultados por mês"); view.innerHTML=`<div class="grid">${ag.map(x=>`<div class="card span4"><h3>${x.nome}</h3><p>Casais: <b>${x.casais}</b></p><p>Vendas: <b>${x.vendas}</b></p><p>VGV: <b class="gold">${money(x.vgv)}</b></p><div class="progress"><div class="bar" style="width:${Math.min(100,x.ef*300)}%"></div></div></div>`).join("")}</div>`}
+function viewAgg(title,subtitle,by){let ag=aggregate(allRows(),by); setHeader(title,subtitle); view.innerHTML=`<div class="grid"><div class="card span12">${podium(ag)}</div><div class="card span12">${tableAgg(ag)}</div></div>`}
+function viewCasais(){let rows=allRows(); let cols=Object.keys(rows[0]||{}); setHeader("Perfil dos Casais","Dashboard usando todas as colunas de perfil"); let wanted=["Cidade","UF","Idade","Renda","Carro","Cartões","Cartoes","Relacionamento","Hospedagem","Local de hospedagem"]; let cards=wanted.map(c=>{let key=cols.find(x=>low(x)===low(c)); if(!key)return ""; let vals={}; rows.forEach(r=>{let v=norm(r[key])||"Não informado"; vals[v]=(vals[v]||0)+1}); let top=Object.entries(vals).sort((a,b)=>b[1]-a[1]).slice(0,5); return `<div class="card span4"><h3>${key}</h3>${top.map(t=>`<p><b>${t[0]}</b> — ${t[1]}</p>`).join("")}</div>`}).join(""); view.innerHTML=`<div class="grid">${cards||'<div class="card span12">Importe uma base com colunas de perfil dos casais.</div>'}</div>`}
+function viewBank(){setHeader("Pulse Bank","Saldo, ranking, ganhos e perdas XP"); if(!pessoas.length) buildPessoas(); let ativos=pessoas.filter(p=>p.status!=="INATIVO"); let total=ativos.reduce((s,p)=>s+(p.xp||500),0); view.innerHTML=`<div class="grid">${kpi("XP Total",num(total),"gold")}${kpi("Ativos",ativos.length,"green")}${kpi("Top XP",ativos.sort((a,b)=>b.xp-a.xp)[0]?.nome||"-","blue")}${kpi("Saldo inicial","500 XP","pink")}<div class="card span12">${tablePessoas(pessoas)}</div></div>`}
+function tablePessoas(rows){return `<div class="tableWrap"><table><tr><th>Foto</th><th>Nome</th><th>Função</th><th>Equipe</th><th>XP</th><th>Status</th><th>Ação CEO</th></tr>${rows.map((p,i)=>`<tr><td><span class="photo">${ini(p.nome)}</span></td><td><b>${p.nome}</b></td><td>${p.funcao}</td><td>${p.equipe}</td><td>${num(p.xp||500)}</td><td>${p.status}</td><td><button class="btn ${p.status==="INATIVO"?'green':'red'}" onclick="togglePessoa('${p.nome.replaceAll("'","")}')">${p.status==="INATIVO"?'Reativar':'Inativar'}</button></td></tr>`).join("")}</table></div>`}
+function togglePessoa(nome){let p=pessoas.find(x=>x.nome===nome); if(!p)return; p.status=p.status==="INATIVO"?"ATIVO":"INATIVO"; if(p.status==="INATIVO"&&!inativos.includes(nome)) inativos.push(nome); if(p.status==="ATIVO") inativos=inativos.filter(x=>x!==nome); save(); render()}
+
+function viewArena(){setHeader("Arena SX","Individual + grupos de competição configuráveis"); view.innerHTML=`<div class="grid"><div class="card span8"><h3>Competições por Grupos</h3><p class="mut">Edite nome, líder, membros e lance resultado diário.</p>${grupos.map((g,i)=>`<div class="card groupCard"><h3>Grupo ${String.fromCharCode(65+i)} • ${g.nome}</h3><div class="row"><div><label>Nome</label><input value="${g.nome}" onchange="grupos[${i}].nome=this.value;save()"></div><div><label>Líder</label><input value="${g.lider}" onchange="grupos[${i}].lider=this.value;save()"></div><div><label>Cor</label><input value="${g.cor}" onchange="grupos[${i}].cor=this.value;save()"></div></div><label>Integrantes</label><input value="${g.membros.join(', ')}" onchange="grupos[${i}].membros=this.value.split(',').map(x=>x.trim());save()"><div class="row"><div><label>Casais</label><input type="number" value="${g.casais}" onchange="grupos[${i}].casais=Number(this.value);save();render()"></div><div><label>Vendas</label><input type="number" value="${g.vendas}" onchange="grupos[${i}].vendas=Number(this.value);save();render()"></div><div><label>VGV</label><input type="number" value="${g.vgv}" onchange="grupos[${i}].vgv=Number(this.value);save();render()"></div></div></div>`).join("")}<button class="btn gold" onclick="grupos.push({nome:'Novo Grupo',lider:'',cor:'Neon',membros:[],casais:0,vendas:0,vgv:0});save();render()">+ Criar grupo</button></div><div class="card span4"><h3>Ranking Grupos</h3>${[...grupos].sort((a,b)=>b.casais-a.casais).map((g,i)=>`<p><b>${i+1}º ${g.nome}</b><br>${g.casais} casais • ${g.vendas} vendas • ${money(g.vgv)}</p>`).join("")}<hr><h3>Arena Individual</h3><p>Promotor x Promotor</p><p>Liner x Liner</p><p>Fechador x Fechador</p><p>Líder x Líder</p></div></div>`}
+function viewInativos(){if(!pessoas.length) buildPessoas(); let rows=pessoas.filter(p=>p.status==="INATIVO"); setHeader("Inativos","Poucas informações, histórico preservado"); view.innerHTML=`<div class="grid"><div class="card span12"><h3>Regra</h3><p class="mut">Os resultados dos inativos continuam contando nos meses em que atuaram.</p></div><div class="card span12"><table><tr><th>Foto</th><th>Nome</th><th>Função</th><th>Equipe</th><th>Ação CEO</th></tr>${rows.map(p=>`<tr><td><span class="photo">${ini(p.nome)}</span></td><td><b>${p.nome}</b></td><td>${p.funcao}</td><td>${p.equipe}</td><td><button class="btn green" onclick="togglePessoa('${p.nome.replaceAll("'","")}')">Reativar</button></td></tr>`).join("")}</table></div></div>`}
+function viewIA(){setHeader("IA Pulse","Insights automáticos"); view.innerHTML=`<div class="grid"><div class="card span12"><h3>🤖 Análise atual</h3><p>${insights()}</p><p>Próximo passo: conectar n8n para enviar esses alertas no WhatsApp automaticamente.</p></div></div>`}
+function viewBase(){let rows=allRows(),cols=Object.keys(rows[0]||{}); setHeader("Base Completa","Todas as colunas importadas"); view.innerHTML=`<div class="card"><h3>${rows.length} linhas • ${cols.length} colunas</h3><div class="tableWrap"><table><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr>${rows.slice(0,200).map(r=>`<tr>${cols.map(c=>`<td>${r[c] instanceof Date?r[c].toLocaleDateString("pt-BR"):r[c]}</td>`).join("")}</tr>`).join("")}</table></div></div>`}
+function render(){renderNav(); if(tab==="home")viewHome(); if(tab==="upload")viewUpload(); if(tab==="meses")viewMeses(); if(tab==="promotores")viewAgg("Promotores","Ranking por promotor",prom); if(tab==="liners")viewAgg("Liners","Ranking por liner",liner); if(tab==="closers")viewAgg("Fechadores","Ranking por fechador",closer); if(tab==="pontos")viewAgg("Pontos de Captação","Ranking por ponto",localCap); if(tab==="casais")viewCasais(); if(tab==="bank")viewBank(); if(tab==="arena")viewArena(); if(tab==="inativos")viewInativos(); if(tab==="ia")viewIA(); if(tab==="base")viewBase()}
+render()
+</script>
+</body>
+</html>
